@@ -39,8 +39,9 @@ class ChocolatesOfTheWorldViewController: UIViewController {
     title = "Chocolate!!!"
 
     setupCartObserver()
+    setupCellConfiguration()
+    setupCellTapHandling()
   }
-
   
   //MARK: Rx Setup
   private func setupCartObserver() {
@@ -58,15 +59,24 @@ class ChocolatesOfTheWorldViewController: UIViewController {
                 cell.configureWithChocolate(chocolate: chocolate)
       }
       .addDisposableTo(disposeBag)
-    
-    europeanChocolates.bindTo(<#T##binder: (Observable<[Chocolate]>) -> (R1) -> R2##(Observable<[Chocolate]>) -> (R1) -> R2#>, curriedArgument: <#T##R1#>)
   }
   
+  private func setupCellTapHandling() {
+    tableView.rx
+      .modelSelected(Chocolate.self)
+      .subscribe(onNext: { chocolate in
+        ShoppingCart.sharedCart.chocolates.value.append(chocolate)
+        
+        if let selectedRowIndexPath = self.tableView.indexPathForSelectedRow {
+          self.tableView.deselectRow(at: selectedRowIndexPath, animated: true)
+        }
+      })
+      .addDisposableTo(disposeBag)
+  }
 }
 
 // MARK: - SegueHandler
 extension ChocolatesOfTheWorldViewController: SegueHandler {
-  
   enum SegueIdentifier: String {
     case
     GoToCart
